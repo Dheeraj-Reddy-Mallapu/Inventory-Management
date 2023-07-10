@@ -1,13 +1,16 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inventory_management/hive_classes/product_object.dart';
 import 'package:inventory_management/hive_classes/product_view_model.dart';
+import 'package:inventory_management/widgets/my_snackbar.dart';
 import 'package:provider/provider.dart';
 import 'package:random_string_generator/random_string_generator.dart';
 
 class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key, required this.isEditMode});
+  const AddProductScreen({super.key, required this.isEditMode, required this.index});
   final bool isEditMode;
+  final int index;
 
   @override
   State<AddProductScreen> createState() => _AddProductScreenState();
@@ -22,14 +25,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
   TextEditingController jmpC = TextEditingController();
   TextEditingController stockC = TextEditingController();
   TextEditingController companyNameC = TextEditingController();
+  String id = '';
 
   int dummy = 0;
 
   @override
   Widget build(BuildContext context) {
     final productViewModel = Provider.of<ProductViewModel>(context);
+    final products = productViewModel.allProducts;
 
     if (widget.isEditMode && dummy == 0) {
+      nameC.text = products[widget.index].name;
+      sizeC.text = products[widget.index].size;
+      mrpC.text = products[widget.index].mrp.toString();
+      jmpC.text = products[widget.index].jmp.toString();
+      stockC.text = products[widget.index].stock.toString();
+      companyNameC.text = products[widget.index].companyName;
+      id = products[widget.index].id;
       dummy++;
     }
 
@@ -142,7 +154,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   onPressed: () async {
                     if (formKey.currentState!.validate()) {
                       // final time = DateTime.now().toLocal().toString().substring(0, 19);
-                      final id = RandomStringGenerator(fixedLength: 15, hasSymbols: false).generate();
+                      id = RandomStringGenerator(fixedLength: 15, hasSymbols: false).generate();
                       final newProduct = Product(
                         id: id,
                         name: nameC.text,
@@ -160,6 +172,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         await productViewModel.updateProduct(newProduct);
                         Get.back();
                       }
+                      // ignore: use_build_context_synchronously
+                      MySnackbar().show(context, 'Hurray!', 'Saved the product', ContentType.success);
                     }
                   },
                   child: const Text('SAVE'),

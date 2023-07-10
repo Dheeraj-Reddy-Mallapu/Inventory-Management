@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io' show Platform, File;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -40,7 +39,7 @@ void importHiveData(String boxName) async {
         const SnackBar(content: Text('Hive database imported successfully.')),
       );
     } catch (e) {
-      print('Error importing Hive database: $e');
+      // print('Error importing Hive database: $e');
     }
   }
 }

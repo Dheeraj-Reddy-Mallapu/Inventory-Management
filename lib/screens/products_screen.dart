@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:inventory_management/hive_classes/product_view_model.dart';
+import 'package:inventory_management/screens/product_details.dart';
 import 'package:provider/provider.dart';
 
 class ProductsScreen extends StatelessWidget {
@@ -30,6 +32,7 @@ class ProductsScreen extends StatelessWidget {
                   trailing: Text('Stock: ${product.stock}'),
                   onTap: () {
                     // Perform update or delete operations here
+                    Get.to(() => ProductDetails(product: product, index: index));
                   },
                 );
               },

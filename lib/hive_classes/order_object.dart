@@ -26,7 +26,13 @@ class Order extends HiveObject {
   int totalMrp;
 
   @HiveField(7)
-  bool isPaid;
+  int totalPaid;
+
+  @HiveField(8)
+  String paymentType;
+
+  @HiveField(9)
+  String notes;
 
   Order({
     required this.id,
@@ -36,6 +42,8 @@ class Order extends HiveObject {
     required this.dateTime,
     required this.totalJmp,
     required this.totalMrp,
-    required this.isPaid,
+    required this.totalPaid,
+    required this.paymentType,
+    required this.notes,
   });
 }

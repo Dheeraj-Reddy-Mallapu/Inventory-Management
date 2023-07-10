@@ -13,17 +13,17 @@ class OrderViewModel extends ChangeNotifier {
 
   List<Order> get allProducts => _orderBox!.values.toList();
 
-  Future<void> addProduct(Order order) async {
+  Future<void> addOrder(Order order) async {
     await _orderBox!.add(order);
     notifyListeners();
   }
 
-  Future<void> updateProduct(Order order) async {
+  Future<void> updateOrder(Order order) async {
     await order.save();
     notifyListeners();
   }
 
-  Future<void> deleteProduct(int index) async {
+  Future<void> deleteOrder(int index) async {
     await _orderBox!.deleteAt(index);
     notifyListeners();
   }
