@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inventory_management/hive_classes/product_view_model.dart';
 import 'package:inventory_management/screens/product_details.dart';
+import 'package:inventory_management/widgets/build_loading_state.dart';
 import 'package:provider/provider.dart';
 
 class ProductsScreen extends StatelessWidget {
@@ -11,6 +12,10 @@ class ProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final productViewModel = Provider.of<ProductViewModel>(context);
 
+    return productViewModel.isInitialized ? buildContent(productViewModel) : buildLoadingState(context);
+  }
+
+  Widget buildContent(ProductViewModel productViewModel) {
     final products = productViewModel.allProducts;
 
     return Scaffold(
@@ -32,7 +37,7 @@ class ProductsScreen extends StatelessWidget {
                   trailing: Text('Stock: ${product.stock}'),
                   onTap: () {
                     // Perform update or delete operations here
-                    Get.to(() => ProductDetails(product: product, index: index));
+                    Get.to(() => ProductDetails(productViewModel: productViewModel, product: product, index: index));
                   },
                 );
               },

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inventory_management/hive_classes/product_object.dart';
+import 'package:inventory_management/hive_classes/product_view_model.dart';
 import 'package:inventory_management/screens/add_product_screen.dart';
 
 class ProductDetails extends StatelessWidget {
-  const ProductDetails({super.key, required this.product, required this.index});
+  const ProductDetails({super.key, required this.product, required this.index, required this.productViewModel});
   final Product product;
+  final ProductViewModel productViewModel;
   final int index;
 
   @override
@@ -52,6 +54,10 @@ class ProductDetails extends StatelessWidget {
                 ListTile(
                   leading: const Text('JMP', style: TextStyle(fontSize: 20)),
                   trailing: SelectableText(product.jmp.toString(), style: const TextStyle(fontSize: 20)),
+                ),
+                IconButton(
+                  onPressed: () => productViewModel.deleteProduct(index).then((value) => Get.back()),
+                  icon: const Icon(Icons.delete_forever),
                 ),
               ],
             ),

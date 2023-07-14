@@ -4,14 +4,19 @@ import 'package:inventory_management/hive_classes/order_object.dart';
 
 class OrderViewModel extends ChangeNotifier {
   Box<Order>? _orderBox;
+  bool _isInitialized = false;
+
+  bool get isInitialized => _isInitialized;
 
   Future<void> initOrderHive() async {
     // await Hive.initFlutter();
     Hive.registerAdapter(OrderAdapter());
     _orderBox = await Hive.openBox<Order>('orders');
+    _isInitialized = true;
+    notifyListeners();
   }
 
-  List<Order> get allProducts => _orderBox!.values.toList();
+  List<Order> get allOrders => _orderBox!.values.toList();
 
   Future<void> addOrder(Order order) async {
     await _orderBox!.add(order);

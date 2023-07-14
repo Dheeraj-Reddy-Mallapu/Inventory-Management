@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
               child: const Text('View All Products'),
             ),
             ElevatedButton(
-              onPressed: () => Get.to(() => const CreateOrderScreen()),
+              onPressed: () => Get.to(() => const CreateOrderScreen(isEditMode: false, index: 0)),
               child: const Text('New Order'),
             ),
             ElevatedButton(

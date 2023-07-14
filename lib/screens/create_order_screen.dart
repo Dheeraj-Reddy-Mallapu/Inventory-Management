@@ -4,11 +4,14 @@ import 'package:inventory_management/hive_classes/order_object.dart';
 import 'package:inventory_management/hive_classes/order_view_model.dart';
 import 'package:inventory_management/hive_classes/product_object.dart';
 import 'package:inventory_management/hive_classes/product_view_model.dart';
+import 'package:inventory_management/widgets/build_loading_state.dart';
 import 'package:provider/provider.dart';
 import 'package:random_string_generator/random_string_generator.dart';
 
 class CreateOrderScreen extends StatefulWidget {
-  const CreateOrderScreen({super.key});
+  const CreateOrderScreen({super.key, required this.isEditMode, required this.index});
+  final bool isEditMode;
+  final int index;
 
   @override
   State<CreateOrderScreen> createState() => _CreateOrderScreenState();
@@ -19,27 +22,75 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   TextEditingController customerPhNoC = TextEditingController();
   TextEditingController notesC = TextEditingController();
   TextEditingController paymentTypeC = TextEditingController();
-  TextEditingController totalPaidC = TextEditingController();
+  TextEditingController totalPaidC = TextEditingController(text: '0');
   List<TextEditingController> quantityCs = [];
   List<TextEditingController> soldAtCs = [];
 
   List<String> newOrderProductsList = [];
 
+  int totalJmp = 0;
+  int totalMrp = 0;
+
+  String id = '';
+  int dummy = 0;
+
   @override
   Widget build(BuildContext context) {
+    final productViewModel = Provider.of<ProductViewModel>(context);
+    final orderViewModel = Provider.of<OrderViewModel>(context);
+
+    return orderViewModel.isInitialized ? buildContent(orderViewModel, productViewModel) : buildLoadingState(context);
+  }
+
+  Widget buildContent(OrderViewModel orderViewModel, ProductViewModel productViewModel) {
     final color = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
     final size = MediaQuery.of(context).size;
 
-    final productViewModel = Provider.of<ProductViewModel>(context);
-    final orderViewModel = Provider.of<OrderViewModel>(context);
-
     final products = productViewModel.allProducts;
+
+    // print(newOrderProductList);
+
+    if (widget.isEditMode && dummy == 0) {
+      final orders = orderViewModel.allOrders;
+      final order = orders[widget.index];
+
+      final allProductsinOrder = order.products;
+
+      for (int i = 0; i < allProductsinOrder.length; i++) {
+        final product = allProductsinOrder[i];
+        newOrderProductsList.add(product.keys.first);
+
+        final productData = products.singleWhere((element) => element.id == product.keys.first);
+
+        quantityCs.add(TextEditingController(text: (product.values.first / productData.jmp).round().toString()));
+        soldAtCs.add(TextEditingController(text: product.values.first.toString()));
+      }
+
+      customerNameC.text = order.customerName;
+      customerPhNoC.text = order.customerPhNo.toString();
+      totalPaidC.text = order.totalPaid.toString();
+      notesC.text = order.notes;
+      paymentTypeC.text = order.paymentType;
+      totalJmp = order.totalJmp;
+      totalMrp = order.totalMrp;
+      id = order.id;
+      dummy++;
+    }
+
     List<Product> filteredProducts = products.where((element) => newOrderProductsList.contains(element.id)).toList();
     List<Product> inverseFilteredProducts =
         products.where((element) => !newOrderProductsList.contains(element.id)).toList();
 
-    // print(newOrderProductList);
+    if (soldAtCs.isNotEmpty) {
+      totalJmp = 0;
+      totalMrp = 0;
+      for (int i = 0; i < soldAtCs.length; i++) {
+        totalJmp = totalJmp + int.parse(soldAtCs[i].text);
+        totalMrp = totalMrp + filteredProducts[i].mrp;
+      }
+    }
+    totalPaidC.text = totalJmp.toString();
 
     List<TextEditingController> controllers = [customerNameC, customerPhNoC];
     return Scaffold(
@@ -194,7 +245,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                           '${int.parse(filteredProducts[index].jmp.toString()) * int.parse(quantityCs[index].text)}';
                                       setState(() {});
                                     } else {
+                                      totalJmp = totalJmp - int.parse(soldAtCs[index].text);
                                       newOrderProductsList.removeAt(index);
+                                      soldAtCs.removeAt(index);
+                                      quantityCs.removeAt(index);
                                       setState(() {});
                                     }
                                   },
@@ -259,10 +313,22 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         ),
       ),
       bottomNavigationBar: SizedBox(
-        height: 120,
+        height: 180,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Total Paid:'),
+                SizedBox(
+                  width: 100,
+                  child: TextFormField(
+                    controller: totalPaidC,
+                  ),
+                )
+              ],
+            ),
             Row(
               children: [
                 Expanded(
@@ -320,18 +386,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
                 ),
                 onTap: () async {
-                  final id = RandomStringGenerator(fixedLength: 15, hasSymbols: false).generate();
+                  id = RandomStringGenerator(fixedLength: 15, hasSymbols: false).generate();
 
                   List<Map<String, int>> productsInOrder = [];
-                  int totalJmp = 0;
-                  int totalMrp = 0;
-                  int totalPaid = 0;
 
                   for (int i = 0; i < newOrderProductsList.length; i++) {
                     Map<String, int> productInOrder = {newOrderProductsList[i]: int.parse(soldAtCs[i].text)};
                     productsInOrder.add(productInOrder);
 
-                    int.parse(soldAtCs[i].text);
+                    // int.parse(soldAtCs[i].text);// TODO
                   }
 
                   final newOrder = Order(
@@ -342,12 +405,16 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     dateTime: DateTime.now().toLocal(),
                     totalJmp: totalJmp,
                     totalMrp: totalMrp,
-                    totalPaid: totalPaid,
+                    totalPaid: int.parse(totalPaidC.text),
                     paymentType: paymentTypeC.text,
                     notes: notesC.text,
                   );
 
-                  await orderViewModel.addOrder(newOrder);
+                  if (!widget.isEditMode) {
+                    await orderViewModel.addOrder(newOrder);
+                  } else {
+                    await orderViewModel.updateOrder(newOrder);
+                  }
                 },
               ),
             ),

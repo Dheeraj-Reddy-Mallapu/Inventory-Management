@@ -169,7 +169,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         await productViewModel.addProduct(newProduct);
                         Get.back();
                       } else {
-                        await productViewModel.updateProduct(newProduct);
+                        await productViewModel.updateProduct(widget.index, newProduct);
+                        Get.back();
                         Get.back();
                       }
                       // ignore: use_build_context_synchronously

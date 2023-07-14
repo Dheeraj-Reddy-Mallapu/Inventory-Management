@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:inventory_management/hive_classes/order_view_model.dart';
+import 'package:inventory_management/screens/order_details.dart';
+import 'package:inventory_management/widgets/build_loading_state.dart';
 import 'package:provider/provider.dart';
 
 class OrdersScreen extends StatelessWidget {
@@ -9,7 +12,11 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final orderViewModel = Provider.of<OrderViewModel>(context);
 
-    final orders = orderViewModel.allProducts;
+    return orderViewModel.isInitialized ? buildContent(orderViewModel) : buildLoadingState(context);
+  }
+
+  Widget buildContent(OrderViewModel orderViewModel) {
+    final orders = orderViewModel.allOrders;
 
     return Scaffold(
       appBar: AppBar(
@@ -27,9 +34,10 @@ class OrdersScreen extends StatelessWidget {
                 return ListTile(
                   title: Text(order.dateTime.toString().substring(0, 19)),
                   subtitle: Text(order.products.length.toString()),
-                  trailing: Text('Stock: ${order.totalPaid}'),
+                  trailing: Text('₹ ${order.totalPaid}'),
                   onTap: () {
                     // Perform update or delete operations here
+                    Get.to(() => OrderDetails(order: order, index: index));
                   },
                 );
               },
